@@ -117,6 +117,15 @@ with command-line options:
 | **`-tls-no-verify`** | use TLS, but do not verify the certificate presented by the server (INSECURE) (default: false) |
 | **`-tls-server-name`** | override the hostname used to verify the server certificate |
 
+## Health checking TLS Servers with Spiffe issued credentials
+
+If a gRPC is serving traffic over TLS, or uses TLS client authentication to authorize clients, and the [Spiffe Workload
+API][spiffe] is available to issue TLS credentials to `grpc_health_probe` you can use it with command-line option:
+
+| Option | Description |
+|:------------|-------------|
+| **`-spiffe` | use Spiffe Workload API to retrieve TLS credentials (default: false) |
+
 ## Other Available Flags
 
 | Option | Description |
@@ -162,6 +171,7 @@ a non-zero exit code.
 | **2** | failure: connection failed or timed out |
 | **3** | failure: rpc failed or timed out |
 | **4** | failure: rpc successful, but the response is not `SERVING` |
+| **5** | failure: could not retrieve TLS credentials using the Spiffe Workload API |
 
 ----
 
@@ -171,3 +181,4 @@ This is not an official Google project.
 [k8s]: https://kubernetes.io/blog/2018/10/01/health-checking-grpc-servers-on-kubernetes/
 [execprobe]: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#define-a-liveness-command
 [rel]: https://github.com/grpc-ecosystem/grpc-health-probe/releases
+[spiffe]: https://github.com/spiffe/spiffe/blob/master/standards/SPIFFE_Workload_API.md

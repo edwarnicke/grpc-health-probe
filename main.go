@@ -60,6 +60,8 @@ const (
 	StatusRPCFailure = 3
 	// StatusUnhealthy indicates rpc succeeded but indicates unhealthy service.
 	StatusUnhealthy = 4
+	// StatusSpiffeFailed indicates failure to retrieve credentials using spiffe workload API
+	StatusSpiffeFailed = 5
 )
 
 func init() {
@@ -205,7 +207,7 @@ func main() {
 		source, err := workloadapi.NewX509Source(ctx)
 		if err != nil {
 			log.Printf("failed to initialize tls credentials with spiffe. error=%v", err)
-			retcode = StatusInvalidArguments
+			retcode = StatusSpiffeFailed
 			return
 		}
 		creds := credentials.NewTLS(tlsconfig.MTLSClientConfig(source, source, tlsconfig.AuthorizeAny()))
