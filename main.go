@@ -25,6 +25,8 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/spiffe/go-spiffe/v2/spiffetls/tlsconfig"
+	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -46,6 +48,7 @@ var (
 	flTLSServerName string
 	flVerbose       bool
 	flGZIP          bool
+	flSpiffe        bool
 )
 
 const (
@@ -77,6 +80,7 @@ func init() {
 	flagSet.StringVar(&flTLSServerName, "tls-server-name", "", "(with -tls) override the hostname used to verify the server certificate")
 	flagSet.BoolVar(&flVerbose, "v", false, "verbose logs")
 	flagSet.BoolVar(&flGZIP, "gzip", false, "use GZIPCompressor for requests and GZIPDecompressor for response (default: false)")
+	flagSet.BoolVar(&flSpiffe, "spiffe", false, "use Spiffe to aquire TLS certificates (default: false)")
 
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
@@ -133,6 +137,7 @@ func init() {
 			log.Printf("  > client-key=%s", flTLSClientKey)
 			log.Printf("  > server-name=%s", flTLSServerName)
 		}
+		log.Printf("> spiffe=%v", flSpiffe)
 	}
 }
 
@@ -195,6 +200,15 @@ func main() {
 			retcode = StatusInvalidArguments
 			return
 		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else if flSpiffe {
+		source, err := workloadapi.NewX509Source(ctx)
+		if err != nil {
+			log.Printf("failed to initialize tls credentials with spiffe. error=%v", err)
+			retcode = StatusInvalidArguments
+			return
+		}
+		creds := credentials.NewTLS(tlsconfig.MTLSClientConfig(source, source, tlsconfig.AuthorizeAny()))
 		opts = append(opts, grpc.WithTransportCredentials(creds))
 	} else {
 		opts = append(opts, grpc.WithInsecure())
