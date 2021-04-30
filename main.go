@@ -200,6 +200,9 @@ func main() {
 		retcode = StatusInvalidArguments
 		return
 	}
+	if !(flTLS || flSPIFFE) {
+		opts = append(opts, grpc.WithInsecure())
+	}
 	if flTLS {
 		creds, err := buildCredentials(flTLSNoVerify, flTLSCACert, flTLSClientCert, flTLSClientKey, flTLSServerName)
 		if err != nil {
@@ -226,8 +229,6 @@ func main() {
 		}
 		creds := credentials.NewTLS(tlsconfig.MTLSClientConfig(source, source, tlsconfig.AuthorizeAny()))
 		opts = append(opts, grpc.WithTransportCredentials(creds))
-	} else {
-		opts = append(opts, grpc.WithInsecure())
 	}
 
 	if flGZIP {
